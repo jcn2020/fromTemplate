@@ -1,0 +1,51 @@
+---
+version: '1.0'
+description: Workflow to list incidents with ID and Title from PagerDuty
+input:
+  - team_id
+  - team_key  
+  - maximum: 50
+  - statuses: ["triggered", "acknowledged", "resolved"]
+  - days_back: 7
+  - execution_id: <% ctx(st2).action_execution_id %>
+
+vars:
+  - results: null
+  - incident_list: []
+  - incident_count: 0
+
+output:
+  - final: <% ctx().final %>
+
+tasks: 
+  list_incidents:
+    action: pagerduty.incident.find
+    input:
+      team_ids: [<% ctx().team_id %>]
+      statuses: <% ctx().statuses %>
+      maximum: <% ctx().maximum %>
+      since: <% (now() - timespan(days => ctx().days_back)).format("%Y-%m-%dT%H:%M:%SZ") %>
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - results: <% task(list_incidents).result %>
+          - incident_list: <% task(list_incidents).result.select(dict(id => $.id, incident_number => $.incident_number, title => $.title, status => $.status)) %>
+          - incident_count: <% ctx().incident_list.len() %>
+          - final: |
+              {
+                "success": true,
+                "total_incidents": <% ctx().incident_count %>,
+                "team_id": "<% ctx().team_id %>",
+                "days_back": <% ctx().days_back %>,
+                "incidents": <% ctx().incident_list %>,
+                "incident_ids_and_titles": <% ctx().incident_list.select(dict(id => $.id, title => $.title)) %>
+              }
+      - when: <% failed() %>
+        publish:
+          - final: |
+              {
+                "success": false,
+                "error": "Failed to retrieve incidents",
+                "message": <% task(list_incidents).result %>,
+                "team_id": "<% ctx().team_id %>"
+              }

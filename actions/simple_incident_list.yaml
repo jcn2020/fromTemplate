@@ -1,0 +1,33 @@
+---
+name: simple_incident_list
+description: Simple workflow to list incident IDs and titles from PagerDuty
+enabled: true
+entry_point: workflows/simple_incident_list/main.yaml
+runner_type: orquesta
+
+parameters:
+  team_id:
+    type: string
+    description: The PagerDuty team ID to filter incidents
+    required: true
+    
+  team_key:
+    type: string
+    secret: true
+    description: The API key for PagerDuty authentication (optional, uses pack config)
+    required: false
+    
+  maximum:
+    type: integer
+    description: Maximum number of incidents to retrieve
+    default: 50
+    
+  statuses:
+    type: array
+    description: Status filter for incidents
+    default: ["triggered", "acknowledged", "resolved"]
+    
+  days_back:
+    type: integer
+    description: Number of days back to search for incidents
+    default: 7

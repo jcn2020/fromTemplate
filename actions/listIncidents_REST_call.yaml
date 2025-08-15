@@ -1,0 +1,22 @@
+---
+name: listIncidents_REST_call
+# pack: sre_pd2_automation
+description: This workflow lists incidents from the SRE PD2 Automation pack.
+enabled: true
+
+entry_point: workflows/listIncidents_REST_call/main.py
+runner_type: python-script
+parameters:
+  team_id:
+    type: string
+    secret: true
+    description: The ID of the team for which to list incidents.
+    default: "{{ st2kv.system.jn_team_id | decrypt_kv }}"
+    position: 1
+
+  team_key: 
+    type: string
+    secret: true
+    description: The key for the team to authenticate API requests.
+    default: "{{ st2kv.system.jn_team_key| decrypt_kv  }}"
+    position: 2

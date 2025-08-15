@@ -1,0 +1,17 @@
+---
+ref: sre_pd2_automation
+name: sre_pd2_automation
+description: This pack contains playbooks and automations for the SRE PD2 team.
+version: 1.0.0
+# tags: [sre, pd2, automation]
+author: author
+email: author@author.com
+keywords: [sre, pd2, automation] 
+
+# created: 2023-10-01
+# updated: 2023-10-01
+# license: Apache-2.0
+# icon: https://example.com/icon.png
+# categories:
+#   - Automation
+#   - Playbooks

@@ -1,0 +1,26 @@
+---
+version: '1.0'
+description: display all the on-call of a specific teamid and escalation policy
+
+input:
+  - escalation_policy
+  - execution_id: <% ctx(st2).action_execution_id %> 
+
+vars: 
+  - results: nil 
+  - task_result: nil 
+
+output:
+  # - final: "<% ctx().task_result %>"
+  - final:  <% task(display_oncall).result.result.user.summary %>
+tasks: 
+  display_oncall: 
+    action: pagerduty.on_call.find
+    input:
+      escalation_policy_ids: [<% ctx().escalation_policy %>]
+    
+    next:
+      - when: <% succeeded() %> 
+        publish: 
+          # - task_result: [<% task(display_oncall).result.user.summary %>]
+          - task_result: "ok"

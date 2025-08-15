@@ -1,0 +1,16 @@
+---
+name: displayEscalationPolicy
+# ref: <packname> 
+description: display ES providing team_id
+enabled: true
+
+runner_type: orquesta
+entry_point: workflows/displayEscalationPolicy/displayEscalationPolicy_main.yaml
+
+parameters:
+  team_id:
+    type: string
+    required: true
+    default: PA8YMKO
+    description: code for team_id
+    secret: false

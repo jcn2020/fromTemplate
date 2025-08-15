@@ -1,0 +1,45 @@
+---
+version: 1.0
+description: workflow to list EscalationPolicy (EP)
+
+input: 
+  - team_id
+  - execution_id: <% ctx(st2).action_execution_id %>
+
+vars: 
+  - stage_result: nil 
+  - list_EPs: []
+
+output: 
+  # - final_result: <% ctx().final_result %>
+  - list_EPs: <% ctx().list_EPs %>  
+
+tasks:
+  fetch_ES:
+    action: pagerduty.escalation_policy.find
+    input:
+      team_ids: [<% ctx().team_id %>]
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - stage_result: <% task(fetch_ES).result %>
+          - final_result: <% ctx(stage_result).result %>
+          - list_EPs: <% ctx().final_result.name %>
+          # - final_result: |
+          #     {
+          #       "success": true,
+          #       "escalation_policies": <% ctx().stage_result %>,
+          #       "team_id": "<% ctx().team_id %>",
+          #       "execution_id": "<% ctx().execution_id %>"
+          #     }
+      - when: <% failed() %>
+        publish:
+          - final_result: |
+              {
+                "success": false,
+                "error": "Failed to retrieve escalation policies",
+                "message": <% task(fetch_ES).result %>,
+                "team_id": "<% ctx().team_id %>"
+              }
+
+  

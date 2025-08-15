@@ -1,0 +1,12 @@
+---
+name: format_incidents
+description: Format PagerDuty incident data to show ID and Title clearly
+enabled: true
+entry_point: format_incidents.py
+runner_type: python-script
+
+parameters:
+  incidents_data:
+    type: array
+    description: List of incident data from PagerDuty API
+    required: true

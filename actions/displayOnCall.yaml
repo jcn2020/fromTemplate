@@ -1,0 +1,16 @@
+---
+name: displayOnCall
+# ref: sre_pd2_automation
+description: display who is on call for teamid and or all? 
+enabled: true
+
+runner_type: orquesta
+entry_point: workflows/displayOnCall/displayOnCall_main.yaml
+
+parameters:
+  escalation_policy:
+    type: string
+    secret: false
+    default: "PUXTQY7"
+    description: policy id
+    

@@ -1,0 +1,64 @@
+---
+name: listIncidents_st2pack
+# pack: sre_pd2_automation
+description: list incidents using pagerduty pack action/workflow
+enabled: true
+
+entry_point: workflows/listIncidents_st2pack/main.yaml
+runner_type: orquesta
+
+parameters: 
+  team_id:  
+    type: string
+    secret: true
+    default: "{{ st2kv.system.jn_team_id | decrypt_kv }}"  # 
+    description: "pagerduty team id"
+    required: true
+
+  team_key:
+    type: string
+    secret: true
+    default:  "{{ st2kv.system.jn_team_key | decrypt_kv }}"
+    description: "pagerduty secret"
+    required: true
+    #don't use ... st2 pack config <pack_name>  
+  
+  maximum:
+    type: integer
+    secret: false
+    default: 5
+    description: "maximum number of incidents to return"
+    required: true
+
+  sort_by:
+    type: string
+    secret: false
+    default: "created_at:desc"
+    description: "sorder order descending"
+    required: true
+
+  statuses:
+    type: array
+    default: 
+      - "acknowledged"
+      - "triggered"
+      - "resolved"
+    description: "TAR search"
+    required: true
+
+  include:
+    type: array
+    default: 
+      - "teams"
+      - "assignees"
+      - "services"
+      - "acknowledgers"
+      - "first_trigger_log_entries"
+    description: "additional data"
+    required: true
+
+  days_back:
+    type: integer
+    default: 7
+    description: "last many days to search"
+    required: true

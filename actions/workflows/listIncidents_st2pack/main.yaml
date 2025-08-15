@@ -1,0 +1,61 @@
+---
+version: '1.0'
+description: workflow to list incidents using pack pagerduty action/workflow
+input:
+  - team_id
+  - team_key  
+  - maximum
+  - sort_by
+  - statuses
+  - include
+  - days_back: 7
+  - execution_id: <% ctx(st2).action_execution_id %>
+
+vars:
+  - results: null
+  - filtered_incidents: []
+  - incident_count: 0
+
+output:
+  - incidents: [<% ctx().filtered_incidents.title %>]
+
+tasks: 
+  list_all_incidents:
+    action: pagerduty.incident.find
+    input:
+      # api_key: <% ctx().team_key %>
+      team_ids: [<% ctx().team_id %>]
+      statuses: <%ctx().statuses %>
+      # limit: 100  # not supported
+      maximum: <% ctx().maximum %>
+      # sort_by: <% ctx().sort_by %> #not supported
+      # include: ["teams", "assignees", "services", "acknowledgers", "first_trigger_log_entries"]
+      include: <% ctx().statuses %>
+      since: <% (now() - timespan(days => ctx().days_back)).format("%Y-%m-%dT%H:%M:%SZ") %>
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - results: <% task(list_all_incidents).result %>
+          - filtered_incidents: <% task(list_all_incidents).result.result %>
+          - incident_count: <% task(list_all_incidents).result.result.len() %>
+          - final: |
+              {
+                "total_incidents": <% ctx().incident_count %>,
+                # "incidents": <% ctx().filtered_incidents %>,
+                "team_id": "<% ctx().team_id %>",
+                "days_back": <% ctx().days_back %>,
+                "execution_id": "<% ctx().execution_id %>",
+                "summary": {
+                   "incident_ids": <% ctx().filtered_incidents.select($.incident_number) %>,
+                   "titles": <% ctx().filtered_incidents.select($.title) %>,
+                   "id_title_pairs": <% ctx().filtered_incidents.select(dict(id => $.incident_number, title => $.title, status => $.status)) %>
+                }
+              }
+      - when: <% failed() %>
+        publish:
+          - final: |
+              {
+                "error": "Failed to retrieve incidents",
+                "message": <% task(list_all_incidents).result %>,
+                "team_id": "<% ctx().team_id %>"
+              }
